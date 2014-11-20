@@ -13,7 +13,5 @@ public class GrassColor : MonoBehaviour {
 	void Update () {
 		myRenderer.color = new Color((1 - grass.amount),.1f,.1f);
 	}
-	void onMouseDown(){
-		grass.amount = 0;
-	}
+	
 }

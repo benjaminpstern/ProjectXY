@@ -17,4 +17,7 @@ public class Grass : MonoBehaviour {
 			amount = 1;
 		}
 	}
+	void onMouseDown(){
+		amount = 0;
+	}
 }
