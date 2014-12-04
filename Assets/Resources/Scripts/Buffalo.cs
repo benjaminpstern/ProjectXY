@@ -69,10 +69,20 @@ public class Buffalo : MonoBehaviour {
 			
 			//If hunger is present and relevant go to more food.
 			if( fullness < hungerThreshold && running < 1 ){
-				float maxGrass = Mathf.Max( Mathf.Max( Mathf.Max( field[curTile.x][curTile.y-1].amount, field[curTile.x][curTile.y+1].amount), field[curTile.x+1][curTile.y].amount), field[curTile.x-1][curTile.y].amount);
-				if( field[curTile.x][curTile.y-1].amount == maxGrass ) goY(-1);
-				else if( field[curTile.x][curTile.y+1].amount == maxGrass ) goY(1);
-				else if( field[curTile.x+1][curTile.y].amount == maxGrass ) goX(1);
+				Grass[] neighbors = {getSouth,getNorth,getEast(),getWest()};
+				int maxIndex = -1;
+				int maxAmount = -1;
+				for(int i=0;i<4;i++){
+					if(neighbors[i]!=null){
+						if(neighbors[i].amount > maxAmount){
+							maxAmount = neighbors[i].amount;
+							maxIndex = i;
+						}
+					}
+				}
+				if(maxAmount == 0) goY(-1);
+				else if( maxAmount == 1 ) goY(1);
+				else if( maxAmount == 2 ) goX(1);
 				else goX(-1);
 			}
 			//If panicked, run away from where you last saw a wolf.
@@ -95,7 +105,30 @@ public class Buffalo : MonoBehaviour {
 			}
 		}
 	}
-	
+	private Grass getNorth(){
+		if(curTile.y < field.Length-1){
+			return field[curTile.x][curTile.y+1];
+		}
+		return null;
+	}
+	private Grass getSouth(){
+		if(curTile.y > 0){
+			return field[curTile.x][curTile.y-1];
+		}
+		return null;
+	}
+	private Grass getEast(){
+		if(curTile.x < field.Length-1){
+			return field[curTile.x+1][curTile.y];
+		}
+		return null;
+	}
+	private Grass getWest(){
+		if(curTile.x > 0){
+			return field[curTile.x-1][curTile.y];
+		}
+		return null;
+	}
 	private Vector3 buddiesLoc( ){
 		Vector3 pull = new Vector3();
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Prey" );
