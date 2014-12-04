@@ -27,6 +27,7 @@ public class Buffalo : MonoBehaviour {
 		fullness = Random.Range(3.0f, 7.0f);
 		attentiveness = Random.Range(0.0f, 1.0f);
 		hungerThreshold = Random.Range(3, 7);
+		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 	}
 	
 	void Update () {
