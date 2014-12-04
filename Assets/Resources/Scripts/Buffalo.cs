@@ -6,7 +6,7 @@ public class Buffalo : MonoBehaviour {
 	//Things that are initialized differently for each buffalo.
 	public float fullness;		//Goes from 0 (Starving) to 10 (Super full).  negative fullness => dead.
 	public float attentiveness;	//How likely it is for the buffalo to notice heard moving and also wolves.
-	public int hungerThreshold;
+	public int hungerThreshold; //How hungry do you have to be to keep eating instead of going with the pack
 
 	//Things that don't change from buffalo to buffalo.
 	public Grass curTile;
@@ -16,9 +16,12 @@ public class Buffalo : MonoBehaviour {
 	public int panicked = 0;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
-	public int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
-	public int restTime = 5;			//How long do we need to rest after we've stopped running.
-
+	public static float roamSpeed = 1;
+	public static float runSpeed = 2;
+	public static float fleeSpeed = 3;
+	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
+	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
+	public static float eatingRate = .1f;
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
@@ -29,35 +32,35 @@ public class Buffalo : MonoBehaviour {
 	void Update () {
 		int act = action();
 		
-		if( fullness < 0 ) Destroy(this);
-		else if( act == 0 ) eat(1f);	//Eat
-		else if( act == 1 ) move(2);	//Run to group
-		else if( act == 2 ) move(1);	//Roam
-		else move(3);					//Run from wolf
+		if( fullness < 0 ) die("starvation.");
+		else if( act == 0 ) eat();	//Eat
+		else if( act == 1 ) move(runSpeed);	//Run to group
+		else if( act == 2 ) move(roamSpeed);	//Roam
+		else move(fleeSpeed);					//Run from wolf
 	}
 	
 	//Determines next action based on stuff. (eat = 0, run = 1, roam = 2 panic = 3)
 	private int action( ){
 		if( seesWolf() ) return 3;
 		if( shouldRun() ) return 1;
-		if( curTile.amount > (10.0f - fullness)/10.0f ) return 0;
+		if( curTile.amount > eatingRate && fullness < hungerThreshold ) return 0;
 		return 2;
 	}
 	
 	//Eat function.
-	private void eat( float duration ){
-		if( duration*(1.0f - attentiveness) > curTile.amount ){
+	private void eat(){
+		if( eatingRate * (1.0f - attentiveness) > curTile.amount ){
 			fullness += curTile.amount;
 			curTile.amount = 0;
 		}
 		else{
-			curTile.amount -= duration*(1.0f - attentiveness);
-			fullness += duration*(1.0f - attentiveness);
+			curTile.amount -= eatingRate * (1.0f - attentiveness);
+			fullness += eatingRate * (1.0f - attentiveness);
 		}
 	}
 	
 	//Move function (Goes towards adjacent square with most grass if hungry & not running, else towards buddies.)
-	private void move( int speed ){
+	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
 			
 			//If hunger is present and relevant go to more food.
@@ -171,10 +174,8 @@ public class Buffalo : MonoBehaviour {
 		runBuddy = null;
 		return false;
 	}
-
-	//Runs when this buffalo gets eaten by a wolf.
-	public void eaten( ){
-		Destroy(this);
+	public void die(string cause){
+		print("Buffalo died due to " + cause);
+		Destroy(gameObject);
 	}
-
 }
