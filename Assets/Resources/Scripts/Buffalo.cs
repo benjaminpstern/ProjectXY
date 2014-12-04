@@ -22,6 +22,7 @@ public class Buffalo : MonoBehaviour {
 	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
 	public static float eatingRate = .1f;
+	public static float hungerRate = .01f;
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
@@ -31,6 +32,7 @@ public class Buffalo : MonoBehaviour {
 	}
 	
 	void Update () {
+		fullness -= hungerRate;
 		int act = action();
 		
 		if( fullness < 0 ) die("starvation.");
@@ -63,6 +65,7 @@ public class Buffalo : MonoBehaviour {
 	//Move function (Goes towards adjacent square with most grass if hungry & not running, else towards buddies.)
 	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
+			fullness -= hungerRate;
 			
 			//If hunger is present and relevant go to more food.
 			if( fullness < hungerThreshold && running < 1 ){
