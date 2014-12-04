@@ -69,9 +69,9 @@ public class Buffalo : MonoBehaviour {
 			
 			//If hunger is present and relevant go to more food.
 			if( fullness < hungerThreshold && running < 1 ){
-				Grass[] neighbors = {getSouth,getNorth,getEast(),getWest()};
+				Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
 				int maxIndex = -1;
-				int maxAmount = -1;
+				float maxAmount = -1;
 				for(int i=0;i<4;i++){
 					if(neighbors[i]!=null){
 						if(neighbors[i].amount > maxAmount){
@@ -80,9 +80,9 @@ public class Buffalo : MonoBehaviour {
 						}
 					}
 				}
-				if(maxAmount == 0) goY(-1);
-				else if( maxAmount == 1 ) goY(1);
-				else if( maxAmount == 2 ) goX(1);
+				if(maxIndex == 0) goY(-1);
+				else if( maxIndex == 1 ) goY(1);
+				else if( maxIndex == 2 ) goX(1);
 				else goX(-1);
 			}
 			//If panicked, run away from where you last saw a wolf.
