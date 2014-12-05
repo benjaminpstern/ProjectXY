@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: 0a7a775cb8936c840bb3d94c6b049d5b
+guid: c9fe772848738fb47b542cd7a0f610bd
 TextureImporter:
   fileIDToRecycleName:
-    21300000: Buffalo
+    21300000: grass
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0

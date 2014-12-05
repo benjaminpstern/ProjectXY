@@ -11,7 +11,7 @@ public class GrassColor : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		myRenderer.color = new Color((1 - grass.amount),.1f,.1f);
+		myRenderer.color = new Color((1 - grass.amount),grass.amount/2,.1f);
 	}
 	
 }

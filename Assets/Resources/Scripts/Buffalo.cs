@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Buffalo : MonoBehaviour {
 
@@ -21,7 +22,7 @@ public class Buffalo : MonoBehaviour {
 	public static float fleeSpeed = 3;
 	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
-	public static float eatingRate = .1f;
+	public float eatingRate = .1f;
 	public static float hungerRate = .01f;
 	
 	void Start () {
@@ -35,7 +36,9 @@ public class Buffalo : MonoBehaviour {
 	void Update () {
 		fullness -= hungerRate;
 		int act = action();
-		
+		if(running > 0){
+			running--;
+		}
 		if( fullness < 0 ) die("starvation.");
 		else if( act == 0 ) eat();	//Eat
 		else if( act == 1 ) move(runSpeed);	//Run to group
@@ -62,7 +65,28 @@ public class Buffalo : MonoBehaviour {
 			fullness += eatingRate * (1.0f - attentiveness);
 		}
 	}
-	
+	private void moveBestTile(){
+		Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
+		List<int> maxIndices = new List<int>();
+		float maxAmount = -1;
+		for(int i=0;i<4;i++){
+			if(neighbors[i]!=null){
+				if(neighbors[i].amount > maxAmount){
+					maxAmount = neighbors[i].amount;
+					maxIndices = new List<int>();
+					maxIndices.Add(i);
+				}
+				else if(neighbors[i].amount == maxAmount){
+					maxIndices.Add(i);
+				}
+			}
+		}
+		int maxIndex = maxIndices[Random.Range (0,maxIndices.Count-1)];
+		if(maxIndex == 0) goY(-1);
+		else if( maxIndex == 1 ) goY(1);
+		else if( maxIndex == 2 ) goX(1);
+		else goX(-1);
+	}
 	//Move function (Goes towards adjacent square with most grass if hungry & not running, else towards buddies.)
 	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
@@ -70,21 +94,7 @@ public class Buffalo : MonoBehaviour {
 			
 			//If hunger is present and relevant go to more food.
 			if( fullness < hungerThreshold && running < 1 ){
-				Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
-				int maxIndex = -1;
-				float maxAmount = -1;
-				for(int i=0;i<4;i++){
-					if(neighbors[i]!=null){
-						if(neighbors[i].amount > maxAmount){
-							maxAmount = neighbors[i].amount;
-							maxIndex = i;
-						}
-					}
-				}
-				if(maxIndex == 0) goY(-1);
-				else if( maxIndex == 1 ) goY(1);
-				else if( maxIndex == 2 ) goX(1);
-				else goX(-1);
+				moveBestTile();
 			}
 			//If panicked, run away from where you last saw a wolf.
 			else if( panicked > 0 ){
@@ -131,14 +141,15 @@ public class Buffalo : MonoBehaviour {
 		return null;
 	}
 	private Vector3 buddiesLoc( ){
-		Vector3 pull = new Vector3();
+		Vector3 pull = Vector3.zero;
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Prey" );
 		if( stuff.Length == 0 ) return transform.position;
 		for( int i = 0; i < stuff.Length; i++ ){
-			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight )
-				pull += stuff[i].transform.position;
+			float distance = Vector3.Distance( stuff[i].transform.position, transform.position );
+			if( distance <= sight && Random.Range (0f,1f) < (attentiveness/distance) )
+				pull += stuff[i].transform.position-transform.position;
 		}
-		return pull;
+		return pull+transform.position;
 	}
 	
 	//Moves one unit in the x direction (1 = east, -1 = west)
@@ -173,7 +184,7 @@ public class Buffalo : MonoBehaviour {
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Predator" );
 		for( int i = 0; i < stuff.Length; i++ ){
 			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight ){
-				if( stuff[i].GetComponent<Wolf>().speed * attentiveness > Random.Range(0f, 1f) ){
+				if( stuff[i].GetComponent<Wolf>().speed * attentiveness + attentiveness*sight/Vector3.Distance (stuff[i].transform.position, transform.position ) > Random.Range(0f, 1f) ){
 					panicked = calmTime;
 					running = restTime;
 					wolfLoc = stuff[i].GetComponent<Wolf>().transform.position;
@@ -200,7 +211,7 @@ public class Buffalo : MonoBehaviour {
 			GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Prey" );
 			for( int jimmy = 0; jimmy < stuff.Length; jimmy++ ){
 				if( Vector3.Distance( stuff[jimmy].transform.position, transform.position ) <= sight ){
-					if( stuff[jimmy].GetComponent<Buffalo>().panicked < 1 || (stuff[jimmy].GetComponent<Buffalo>().running > 0 && running < 1) ){
+					if( stuff[jimmy].GetComponent<Buffalo>().panicked > 0 || (stuff[jimmy].GetComponent<Buffalo>().running > 0 && running < 1) ){
 						runBuddy = stuff[jimmy].GetComponent<Buffalo>();
 						running = restTime;
 						return true;
@@ -210,7 +221,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		
 		//If the runBuddy is still running, you should still be running.
-		if( runBuddy.running > 0 ) return true;
+		else if( runBuddy.running > 0 ) return true;
 		
 		//Else, we no longer have a runBuddy and return false.
 		runBuddy = null;

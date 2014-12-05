@@ -83,7 +83,7 @@ public class Wolf : MonoBehaviour {
 	}
 
 	public void die(string cause){
-		print("Buffalo died due to " + cause);
+		print("Wolf died due to " + cause);
 		Destroy(gameObject);
 	}
 }
