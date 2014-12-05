@@ -10,6 +10,8 @@ public class Grass : MonoBehaviour {
 	//Whether or not something is on this grass.
 	public bool occupied;
 	void Start () {
+		x = (int)transform.position.x;
+		y = (int)transform.position.y;
 		amount = 1;
 	}
 	

@@ -29,6 +29,7 @@ public class Buffalo : MonoBehaviour {
 		attentiveness = Random.Range(0.0f, 1.0f);
 		hungerThreshold = Random.Range(3, 7);
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
+		curTile = field[(int)transform.position.x][(int)transform.position.y];
 	}
 	
 	void Update () {
@@ -141,24 +142,28 @@ public class Buffalo : MonoBehaviour {
 	}
 	
 	//Moves one unit in the x direction (1 = east, -1 = west)
-	private void goX( int dir ){		
-		Grass newTile = field[curTile.x + dir][curTile.y];
-		if( !newTile.occupied ){
-			curTile.occupied = false;
-			curTile = newTile;
-			transform.position = curTile.transform.position;
-			curTile.occupied = true;
-		}
+	private void goX( int dir ){
+		if(curTile.x + dir < field.Length && curTile.x + dir >= 0){
+			Grass newTile = field[curTile.x + dir][curTile.y];
+			if( !newTile.occupied ){
+				curTile.occupied = false;
+				curTile = newTile;
+				transform.position = new Vector3(curTile.x,curTile.y,transform.position.z);
+				curTile.occupied = true;
+			}
+		}		
 	}
 	
 	//Moves one unit in the y direction (1 = south, -1 = north)
 	private void goY( int dir ){
-		Grass newTile = field[curTile.x][curTile.y + dir];
-		if( !newTile.occupied ){
-			curTile.occupied = false;
-			curTile = newTile;
-			transform.position = curTile.transform.position;
-			curTile.occupied = true;
+		if(curTile.y + dir < field.Length && curTile.y + dir >= 0){
+			Grass newTile = field[curTile.x][curTile.y + dir];
+			if( !newTile.occupied ){
+				curTile.occupied = false;
+				curTile = newTile;
+				transform.position = new Vector3(curTile.x,curTile.y,transform.position.z);
+				curTile.occupied = true;
+			}
 		}
 	}
 	

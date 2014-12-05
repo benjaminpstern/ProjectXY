@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour {
 			field[i] = new Grass[fieldSize];
 			for(int j=0;j<fieldSize;j++){
 				GameObject grassTilePrefab = Resources.Load<GameObject>("Prefab/Grass");
-				GameObject grassTile = Instantiate(grassTilePrefab,new Vector3(i,j,0),Quaternion.identity) as GameObject;
+				GameObject grassTile = Instantiate(grassTilePrefab,new Vector3(i,j,1),Quaternion.identity) as GameObject;
 				field[i][j] = grassTile.GetComponent<Grass>();
 			}
 		}
@@ -26,12 +26,11 @@ public class GameManager : MonoBehaviour {
 				int y = herdY-j;
 				GameObject buffaloPrefab = Resources.Load<GameObject>("Prefab/Buffalo");
 				GameObject buffalo = Instantiate(buffaloPrefab,new Vector3(x,y,0),Quaternion.identity) as GameObject;
-				buffalo.GetComponent<Buffalo>().curTile = field[x][y];
 			}
 		}
 		for(int i=0;i<numPacks;i++){
 			int packX = Random.Range(packSize,fieldSize-packSize);
-			int packY = Random.Range(0,packSize);
+			int packY = Random.Range(packSize,fieldSize-packSize);
 			for(int j=0;j<packSize;j++){
 				int x = packX+j;
 				int y = packY-j;
