@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -10,6 +10,9 @@ public class Buffalo : MonoBehaviour {
 	public float hungerWeight; //the weight it assigns to hunger
 	public float buddiesWeight;//the weight it assigns to being next to buddies
 	public float tileWeight;//the weight it assigns to being on a good tile
+	public int[] hungerBits;
+	public int[] buddiesBits;
+	public int[] tileBits;
 
 	//Things that don't change from buffalo to buffalo.
 	public Grass curTile;
@@ -25,14 +28,22 @@ public class Buffalo : MonoBehaviour {
 	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
 	public float eatingRate = .5f;
+	public int bitNum = 10;
+	public float mutationRate;
 	public static float hungerRate = .01f;
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
 		attentiveness = Random.Range(0.0f, 1.0f);
-		hungerWeight = Random.Range (0.0f,1.0f);
-		buddiesWeight = Random.Range (0.0f,1.0f);
-		tileWeight = Random.Range (0.0f,1.0f);
+		hungerBits = new int[bitNum];
+		buddiesBits = new int[bitNum];
+		tileBits = new int[bitNum];
+		for(int i=0;i<bitNum;i++){
+			hungerBits[i] = Random.Range (0,2);
+			buddiesBits[i] = Random.Range (0,2);
+			tileBits[i] = Random.Range (0,2);
+		}
+		setWeights();
 		float sum = hungerWeight + buddiesWeight + tileWeight;
 		hungerWeight /= sum;
 		buddiesWeight /= sum;
@@ -40,7 +51,19 @@ public class Buffalo : MonoBehaviour {
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
 	}
-	
+	void setWeights(){
+		hungerWeight = 0;
+		buddiesWeight = 0;
+		tileWeight = 0;
+		for(int i=0;i<bitNum;i++){
+			hungerWeight += hungerBits[i]*Mathf.Pow (2,(bitNum - i - 1));
+			buddiesWeight += buddiesBits[i]*Mathf.Pow (2,(bitNum - i - 1));
+			tileWeight += tileBits[i]*Mathf.Pow (2,(bitNum - i - 1));
+		}
+		hungerWeight /= 1000;
+		buddiesWeight /= 1000;
+		tileWeight /= 1000;
+	}
 	void Update () {
 		fullness -= hungerRate;
 		int act = action();
@@ -239,5 +262,8 @@ public class Buffalo : MonoBehaviour {
 	public void die(string cause){
 		print("Buffalo died due to " + cause);
 		Destroy(gameObject);
+	}
+	public void mate(Buffalo other){
+		
 	}
 }
