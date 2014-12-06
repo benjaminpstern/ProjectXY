@@ -23,8 +23,9 @@ public class GameManager : MonoBehaviour {
 				field[i][j] = grassTile.GetComponent<Grass>();
 				int center = fieldSize/2;
 				int sqrDistance = (center - i)*(center - i) + (center - j)*(center - j);
-				field[i][j].maxAmount = 1 - Mathf.Sqrt (sqrDistance)/(fieldSize);
-				field[i][j].regenRate = maxRegen *(1 - Mathf.Sqrt (sqrDistance)/(fieldSize));
+				//field[i][j].maxAmount = 1 - Mathf.Sqrt (sqrDistance)/(fieldSize);
+				field[i][j].maxAmount = 1;
+				field[i][j].regenRate = maxRegen;//maxRegen *(1 - Mathf.Sqrt (sqrDistance)/(fieldSize));
 			}
 		}
 		for(int i=0;i<numHerds;i++){

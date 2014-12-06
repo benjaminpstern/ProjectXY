@@ -7,7 +7,9 @@ public class Buffalo : MonoBehaviour {
 	//Things that are initialized differently for each buffalo.
 	public float fullness;		//Goes from 0 (Starving) to 10 (Super full).  negative fullness => dead.
 	public float attentiveness;	//How likely it is for the buffalo to notice heard moving and also wolves.
-	public int hungerThreshold; //How hungry do you have to be to keep eating instead of going with the pack
+	public float hungerWeight; //the weight it assigns to hunger
+	public float buddiesWeight;//the weight it assigns to being next to buddies
+	public float tileWeight;//the weight it assigns to being on a good tile
 
 	//Things that don't change from buffalo to buffalo.
 	public Grass curTile;
@@ -22,13 +24,19 @@ public class Buffalo : MonoBehaviour {
 	public static float fleeSpeed = 3;
 	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
-	public float eatingRate = .1f;
+	public float eatingRate = .5f;
 	public static float hungerRate = .01f;
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
 		attentiveness = Random.Range(0.0f, 1.0f);
-		hungerThreshold = Random.Range(3, 7);
+		hungerWeight = Random.Range (0.0f,1.0f);
+		buddiesWeight = Random.Range (0.0f,1.0f);
+		tileWeight = Random.Range (0.0f,1.0f);
+		float sum = hungerWeight + buddiesWeight + tileWeight;
+		hungerWeight /= sum;
+		buddiesWeight /= sum;
+		tileWeight /= sum;
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
 	}
@@ -43,15 +51,20 @@ public class Buffalo : MonoBehaviour {
 		else if( act == 0 ) eat();	//Eat
 		else if( act == 1 ) move(runSpeed);	//Run to group
 		else if( act == 2 ) move(roamSpeed);	//Roam
+		else if( act == 4 ) moveBestTile();
 		else move(fleeSpeed);					//Run from wolf
 	}
 	
-	//Determines next action based on stuff. (eat = 0, run = 1, roam = 2 panic = 3)
+	//Determines next action based on stuff. (eat = 0, run = 1, roam toward herd = 2, panic = 3, go to best tile = 4)
 	private int action( ){
 		if( seesWolf() ) return 3;
 		if( shouldRun() ) return 1;
-		if( curTile.amount > eatingRate && fullness < hungerThreshold ) return 0;
-		return 2;
+		float hunger = ((10-fullness)/10)*hungerWeight;
+		float loneliness = ((transform.position - buddiesLoc()).magnitude)/sight * buddiesWeight;
+		float imOnAShittyTile = ((1-curTile.amount)*tileWeight);
+		if( hunger > loneliness && hunger > imOnAShittyTile ) return 0;
+		if( loneliness > hunger && loneliness > imOnAShittyTile)return 2;
+		return 4;
 	}
 	
 	//Eat function.
@@ -66,6 +79,7 @@ public class Buffalo : MonoBehaviour {
 		}
 	}
 	private void moveBestTile(){
+		fullness -= hungerRate;
 		Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
 		List<int> maxIndices = new List<int>();
 		float maxAmount = -1;
@@ -81,7 +95,7 @@ public class Buffalo : MonoBehaviour {
 				}
 			}
 		}
-		int maxIndex = maxIndices[Random.Range (0,maxIndices.Count-1)];
+		int maxIndex = maxIndices[Random.Range (0,maxIndices.Count)];
 		if(maxIndex == 0) goY(-1);
 		else if( maxIndex == 1 ) goY(1);
 		else if( maxIndex == 2 ) goX(1);
@@ -91,13 +105,8 @@ public class Buffalo : MonoBehaviour {
 	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
 			fullness -= hungerRate;
-			
-			//If hunger is present and relevant go to more food.
-			if( fullness < hungerThreshold && running < 1 ){
-				moveBestTile();
-			}
 			//If panicked, run away from where you last saw a wolf.
-			else if( panicked > 0 ){
+			if( panicked > 0 ){
 				Vector3 pull = transform.position - wolfLoc;
 				pull = Vector3.Normalize(pull);
 				float biggest = Mathf.Max( Mathf.Abs(pull.x), Mathf.Abs(pull.y));
