@@ -10,6 +10,7 @@ public class Buffalo : MonoBehaviour {
 	public float hungerWeight; //the weight it assigns to hunger
 	public float buddiesWeight;//the weight it assigns to being next to buddies
 	public float tileWeight;//the weight it assigns to being on a good tile
+	public int[] attentivenessBits;
 	public int[] hungerBits;
 	public int[] buddiesBits;
 	public int[] tileBits;
@@ -39,11 +40,12 @@ public class Buffalo : MonoBehaviour {
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
-		attentiveness = Random.Range(0.0f, 1.0f);
+		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
 		buddiesBits = new int[bitNum];
 		tileBits = new int[bitNum];
 		for(int i=0;i<bitNum;i++){
+			attentivenessBits[i] = Random.Range (0,2);
 			hungerBits[i] = Random.Range (0,2);
 			buddiesBits[i] = Random.Range (0,2);
 			tileBits[i] = Random.Range (0,2);
@@ -57,17 +59,20 @@ public class Buffalo : MonoBehaviour {
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
 	}
 	void setWeights(){
+		attentiveness = 0;
 		hungerWeight = 0;
 		buddiesWeight = 0;
 		tileWeight = 0;
 		for(int i=0;i<bitNum;i++){
+			attentiveness += attentivenessBits[i]*Mathf.Pow (2,(bitNum - i - 1));
 			hungerWeight += hungerBits[i]*Mathf.Pow (2,(bitNum - i - 1));
 			buddiesWeight += buddiesBits[i]*Mathf.Pow (2,(bitNum - i - 1));
 			tileWeight += tileBits[i]*Mathf.Pow (2,(bitNum - i - 1));
 		}
-		hungerWeight /= 1000;
-		buddiesWeight /= 1000;
-		tileWeight /= 1000;
+		attentiveness /= Mathf.Pow (2,bitNum);
+		hungerWeight /= Mathf.Pow (2,bitNum);
+		buddiesWeight /= Mathf.Pow (2,bitNum);
+		tileWeight /= Mathf.Pow (2,bitNum);
 	}
 	void Update () {
 		if( isDead ){
@@ -280,7 +285,34 @@ public class Buffalo : MonoBehaviour {
 			print("Buffalo died due to " + cause);
 		}
 	}
+	public int[] mate(int[] array1, int[] array2){
+		int[] a1 = new int[array1.Length];
+		int[] a2 = new int[array2.Length];
+		for(int i=0;i<a1.Length;i++){
+			a1[i] = array1[i];
+			a2[i] = array2[i];
+		}
+		int swapPosition = Random.Range (0,a1.Length);
+		int[] tmp = new int[a1.Length];
+		for(int i=swapPosition;i<a1.Length;i++){
+			tmp[i] = a1[i];
+			a1[i] = a2[i];
+			a2[i] = tmp[i];
+		}
+		for(int i=0;i<a1.Length;i++){
+			if(Random.Range (0f,1f) > mutationRate){
+				a1[i] = (a1[i]+1)%2;
+			}
+			if(Random.Range (0f,1f) > mutationRate){
+				a2[i] = (a2[i]+1)%2;
+			}
+		}
+		if(Random.Range (0f,1f) > .5){
+			return a1;
+		}
+		return a2;
+	}
 	public void mate(Buffalo other){
-		
+		Buffalo newBuffalo = Instantiate(Resources.Load ("Prefab/Buffalo"),this.transform.position);
 	}
 }
