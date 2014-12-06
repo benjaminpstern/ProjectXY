@@ -31,6 +31,11 @@ public class Buffalo : MonoBehaviour {
 	public int bitNum = 10;
 	public float mutationRate;
 	public static float hungerRate = .01f;
+	public bool isDead = false;
+	public float baseMeat = 10.0f;
+	public float decayFactor = .2f;
+	public float meat;
+	
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
@@ -65,17 +70,25 @@ public class Buffalo : MonoBehaviour {
 		tileWeight /= 1000;
 	}
 	void Update () {
-		fullness -= hungerRate;
-		int act = action();
-		if(running > 0){
-			running--;
+		if( isDead ){
+			meat -= decayFactor;
+			if( meat <= 0 ){
+				Destroy(gameObject);
+			}
 		}
-		if( fullness < 0 ) die("starvation.");
-		else if( act == 0 ) eat();	//Eat
-		else if( act == 1 ) move(runSpeed);	//Run to group
-		else if( act == 2 ) move(roamSpeed);	//Roam
-		else if( act == 4 ) moveBestTile();
-		else move(fleeSpeed);					//Run from wolf
+		else{
+			fullness -= hungerRate;
+			int act = action();
+			if(running > 0){
+				running--;
+			}
+			if( fullness < 0 ) die("starvation.");
+			else if( act == 0 ) eat();	//Eat
+			else if( act == 1 ) move(runSpeed);	//Run to group
+			else if( act == 2 ) move(roamSpeed);	//Roam
+			else if( act == 4 ) moveBestTile();
+			else move(fleeSpeed);					//Run from wolf
+		}
 	}
 	
 	//Determines next action based on stuff. (eat = 0, run = 1, roam toward herd = 2, panic = 3, go to best tile = 4)
@@ -260,8 +273,12 @@ public class Buffalo : MonoBehaviour {
 		return false;
 	}
 	public void die(string cause){
-		print("Buffalo died due to " + cause);
-		Destroy(gameObject);
+		if( !isDead ){
+			isDead = true;
+			meat = baseMeat + fullness;
+			
+			print("Buffalo died due to " + cause);
+		}
 	}
 	public void mate(Buffalo other){
 		
