@@ -184,7 +184,8 @@ public class Buffalo : MonoBehaviour {
 				transform.position = new Vector3(curTile.x,curTile.y,transform.position.z);
 				curTile.occupied = true;
 			}
-		}		
+		}	
+		else goY((int)((((float)Random.Range(0, 2)) - .5f) * 2) );
 	}
 	
 	//Moves one unit in the y direction (1 = south, -1 = north)
@@ -198,6 +199,7 @@ public class Buffalo : MonoBehaviour {
 				curTile.occupied = true;
 			}
 		}
+		else goX((int)((((float)Random.Range(0, 2)) - .5f) * 2) );
 	}
 	
 	//Checks if bison can see a wolf nearby.
