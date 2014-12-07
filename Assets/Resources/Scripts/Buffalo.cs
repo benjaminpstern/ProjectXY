@@ -22,7 +22,9 @@ public class Buffalo : MonoBehaviour {
 	public int running = 0;
 	public int panicked = 0;
 	public int pregnancyTimer;
-	public int pregnancyTurns;
+	public int pregnancyTurns = 10;
+	public int age;
+	public int maxAge = 200;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
 	public static float roamSpeed = 1;
@@ -32,7 +34,7 @@ public class Buffalo : MonoBehaviour {
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
 	public float eatingRate = .5f;
 	public int bitNum = 10;
-	public float mutationRate;
+	public float mutationRate = 0;
 	public static float hungerRate = .01f;
 	public bool isDead = false;
 	public float baseMeat = 10.0f;
@@ -41,7 +43,8 @@ public class Buffalo : MonoBehaviour {
 	public Buffalo myMate;
 	public float matingReq;
 	void Start () {
-		fullness = 5;
+		age = 0;
+		fullness = 4;
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
 		buddiesBits = new int[bitNum];
@@ -84,8 +87,17 @@ public class Buffalo : MonoBehaviour {
 				Destroy(gameObject);
 			}
 		}
+		age++;
+		if(age > maxAge){
+			die("being old.");
+		}
 		else{
-			fullness -= hungerRate;
+			if(pregnancyTimer == -1){
+				fullness -= hungerRate;
+			}
+			else{
+				fullness -= 2*hungerRate;
+			}
 			int act = action();
 			if(running > 0){
 				running--;
@@ -109,7 +121,7 @@ public class Buffalo : MonoBehaviour {
 					}
 				}
 			}
-			else if(pregnancyTimer > 1){
+			else if(pregnancyTimer > 0){
 				pregnancyTimer --;
 				if(pregnancyTimer == 0){
 					if(myMate != null && !isDead){
@@ -345,8 +357,41 @@ public class Buffalo : MonoBehaviour {
 		}
 		return a2;
 	}
+	public Vector3 findEmptyTile(Vector3 position){
+		if(!field[(int)position.x][(int)position.y].occupied){
+			return position;
+		}
+		float x;
+		float y;
+		int xOrY = Random.Range (0,2);
+		int posOrNeg = Random.Range (0,2);
+		if(posOrNeg == 0){
+			posOrNeg --;
+		}
+		if(xOrY == 1){
+			x = position.x;
+			y = position.y + posOrNeg ;
+			if(y >= field.Length || y < 0){
+				y -= position.y;
+				y *= -1;
+				y += position.y;
+			}
+		}
+		else{
+			x = position.x + posOrNeg;
+			y = position.y;
+			if(x >= field.Length || x < 0){
+				x -= position.x;
+				x *= -1;
+				x += position.x;
+			}
+		}
+		return findEmptyTile(new Vector3(x,y,position.z));
+	}
 	public void mate(Buffalo other){
-		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),this.transform.position,Quaternion.identity) as GameObject;
+		Vector3 position = findEmptyTile(this.transform.position);
+		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;
+		field[(int)position.x][(int)position.y].occupied = true;
 		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
