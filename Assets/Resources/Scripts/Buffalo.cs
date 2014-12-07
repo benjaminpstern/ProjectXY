@@ -27,11 +27,11 @@ public class Buffalo : MonoBehaviour {
 	public int maxAge = 200;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
-	public static float roamSpeed = 1;
-	public static float runSpeed = 2;
-	public static float fleeSpeed = 3;
-	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
-	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
+	public int roamSpeed = 1;
+	public int runSpeed = 3;
+	public int fleeSpeed = 5;
+	public int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
+	public int restTime = 5;			//How long do we need to rest after we've stopped running.
 	public float eatingRate = .5f;
 	public int bitNum = 10;
 	public float mutationRate = 0;
@@ -63,6 +63,7 @@ public class Buffalo : MonoBehaviour {
 		tileWeight /= sum;
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
+		curTile.occupied = true;
 	}
 	void setWeights(){
 		attentiveness = 0;
@@ -163,7 +164,7 @@ public class Buffalo : MonoBehaviour {
 		}
 	}
 	private void moveBestTile(){
-		fullness -= hungerRate;
+		fullness -= hungerRate/2;
 		Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
 		List<int> maxIndices = new List<int>();
 		float maxAmount = -1;
@@ -188,7 +189,7 @@ public class Buffalo : MonoBehaviour {
 	//Move function (Goes towards adjacent square with most grass if hungry & not running, else towards buddies.)
 	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
-			fullness -= hungerRate;
+			fullness -= hungerRate/2;
 			//If panicked, run away from where you last saw a wolf.
 			if( panicked > 0 ){
 				Vector3 pull = transform.position - wolfLoc;
@@ -279,7 +280,8 @@ public class Buffalo : MonoBehaviour {
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Predator" );
 		for( int i = 0; i < stuff.Length; i++ ){
 			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight ){
-				if( stuff[i].GetComponent<Wolf>().speed * attentiveness + attentiveness*sight/Vector3.Distance (stuff[i].transform.position, transform.position ) > Random.Range(0f, 1f) ){
+				float scaledSpeed = stuff[i].GetComponent<Wolf>().speed/stuff[i].GetComponent<Wolf>().maxSpeed;
+				if( attentiveness * (scaledSpeed + sight/Vector3.Distance(stuff[i].transform.position, transform.position) ) > Random.Range(0f, 1f) ){
 					panicked = calmTime;
 					running = restTime;
 					wolfLoc = stuff[i].GetComponent<Wolf>().transform.position;
