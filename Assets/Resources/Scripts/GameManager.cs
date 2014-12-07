@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour {
 				int y = herdY-j;
 				GameObject buffaloPrefab = Resources.Load<GameObject>("Prefab/Buffalo");
 				Instantiate(buffaloPrefab,new Vector3(x,y,0),Quaternion.identity);
+				field[x][y].occupied = true;
 			}
 		}
 		for(int i=0;i<numPacks;i++){
