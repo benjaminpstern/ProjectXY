@@ -25,9 +25,9 @@ public class Buffalo : MonoBehaviour {
 	public int pregnancyTurns;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
-	public static float roamSpeed = 1;
-	public static float runSpeed = 2;
-	public static float fleeSpeed = 3;
+	public static int roamSpeed = 1;
+	public static int runSpeed = 3;
+	public static int fleeSpeed = 5;
 	public static int calmTime = 5;			//How long does it take after we can't see any wolves to calm down.
 	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
 	public float eatingRate = .5f;
@@ -267,7 +267,8 @@ public class Buffalo : MonoBehaviour {
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Predator" );
 		for( int i = 0; i < stuff.Length; i++ ){
 			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight ){
-				if( stuff[i].GetComponent<Wolf>().speed * attentiveness + attentiveness*sight/Vector3.Distance (stuff[i].transform.position, transform.position ) > Random.Range(0f, 1f) ){
+				float scaledSpeed = stuff[i].GetComponent<Wolf>().speed/stuff[i].GetComponent<Wolf>().maxSpeed;
+				if( attentiveness * (scaledSpeed + sight/Vector3.Distance(stuff[i].transform.position, transform.position) ) > Random.Range(0f, 1f) ){
 					panicked = calmTime;
 					running = restTime;
 					wolfLoc = stuff[i].GetComponent<Wolf>().transform.position;
