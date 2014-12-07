@@ -82,6 +82,7 @@ public class Buffalo : MonoBehaviour {
 		if( isDead ){
 			meat -= decayFactor;
 			if( meat <= 0 ){
+				curTile.occupied = false;
 				Destroy(gameObject);
 			}
 		}
