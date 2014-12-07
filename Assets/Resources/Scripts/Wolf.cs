@@ -8,21 +8,22 @@ public class Wolf : MonoBehaviour {
 	public float fullness;		//Goes from 1 (Starving) to 10 (Super full).  0 fullness => dead.
 	public float stealth;		//How unlikely it is for the wolf to be noticed. (0 - 1)
 	public float speed;		//How fast the wolf is moving.
+	public float runTime;		//How long the wolf has been running.
 	public float hungerWeight; 	//the weight it assigns to hunger
 	public float buddiesWeight;	//the weight it assigns to being next to buddies
 
 	public Buffalo prey;		//Direction of current prey.
 
-	//Things that don't change from buffalo to buffalo.
+	//Things that don't change from wolf to wolf.
 	public Grass curTile;
 	public Grass[][] field;
-	public int sight = 10;				//How many squares to check away from the wolf.
+	public int sight = 20;				//How many squares to check away from the wolf.
 	public bool eating;				//Whether or not the wolf is eating.
-	public static float roamSpeed = 1;
-	public static float runSpeed = 5;
-	public static int restTime = 5;			//How long do we need to rest after we've stopped running.
-	public static float eatingTime = 3;		//How many cycles it takes to eat a buffalo.
-	public static float hungerRate = .01f;		//How quickly a wolf gets hungry.
+	public int maxSpeed = 7;
+	public int restRate = 2;			//How quickly a wolf recovers from running.
+	public int maxRunTime = 13;		//Maximum amount of tiles a wolf can run.
+	public float eatingRate = 1f;		//How quickly a wolf eats.
+	public float hungerRate = .01f;		//How quickly a wolf gets hungry.
 	
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
@@ -31,6 +32,7 @@ public class Wolf : MonoBehaviour {
 		buddiesWeight = 1 - hungerWeight;
 		eating = false;
 		speed = 0;
+		runTime = 0;
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 	}
 	
@@ -38,9 +40,9 @@ public class Wolf : MonoBehaviour {
 		fullness -= hungerRate;
 		
 		if( fullness < 0 ) die("starvation.");
-		else if( atFood() ) eat();		//Eat
-		else if( seePrey() ) chase();		//Chase a Buffalo
-		else prowl();				//Look for a Buffalo to chase
+		else if( atFood() ) eat();					//Eat
+		else if( seePrey() && ( runTime < maxRunTime ) ) chase();	//Chase a Buffalo
+		else prowl();							//Look for a Buffalo to chase
 	}
 	
 	// Where are there wolves that can be seen?
@@ -65,10 +67,17 @@ public class Wolf : MonoBehaviour {
 		return false;
 	}
 
+	// Is this wolf at prey?
+	private bool atPrey () {
+		if ( prey == null ) return false;
+		return (Vector3.Distance( prey.transform.position, transform.position ) <= 1);
+	}
+
 	// Can this wolf see prey?
 	private bool seePrey () {
+		if( prey != null && (Vector3.Distance( prey.transform.position, transform.position ) <= sight) ) return true;
+		if( prey != null && (Vector3.Distance( prey.transform.position, transform.position ) > sight) ) prey = null;
 		List<Buffalo> visible = new List<Buffalo>();
-		if( prey != null ) return true;
 		GameObject[] buff = GameObject.FindGameObjectsWithTag( "Prey" );
 		if( buff.Length == 0 ) {
 			prey = null;
@@ -101,18 +110,63 @@ public class Wolf : MonoBehaviour {
 	// EAT
 	private void eat () {
 		eating = true;
-
+		runTime -= restRate;
+		if (runTime < 0 ) runTime = 0;
+		GameObject[] buff = GameObject.FindGameObjectsWithTag( "Prey" );
+		List<Buffalo> foods = new List<Buffalo>();
+		for( int i = 0; i < buff.Length; i++ ){
+			if( (Vector3.Distance( buff[i].transform.position, transform.position ) <= 1) && (buff[i].GetComponent<Buffalo>().isDead) )
+				foods.Add( buff[i].GetComponent<Buffalo>() );
+		}
+		if ( foods.Count == 0 ) {
+			eating = false;
+			return;
+		}
+		Buffalo food = foods[Random.Range(0, foods.Count)];
+		if( eatingRate  >= food.meat ){
+			fullness += food.meat;
+			food.meat = 0;
+			if ( foods.Count == 1) eating = false;
+		}
+		else{
+			food.meat -= eatingRate;
+			fullness += eatingRate;
+		}
 	}
 
 	// Chase a Buffalo
 	private void chase () {
 		eating = false;
-
+		fullness -= hungerRate;
+		float preyDist = Vector3.Distance( prey.transform.position, transform.position );
+		float distWeight = maxSpeed - preyDist;
+		speed = (int)( maxSpeed - ( distWeight * stealth ) );
+		if ( speed > maxSpeed ) speed = maxSpeed;
+		for ( int i = 0; i < speed; i++ ) {
+			if ( runTime > maxRunTime ) return;
+			if ( atPrey() ) {
+				prey.die("being eaten");
+				prey = null;
+				return;
+			}
+			else {
+				fullness -= hungerRate / 2;
+				runTime++;
+				Vector3 pull = prey.transform.position - transform.position;
+				pull = Vector3.Normalize(pull);
+				float biggest = Mathf.Max( Mathf.Abs(pull.x), Mathf.Abs(pull.y));
+				if( biggest == pull.x ) goX( (int)(Mathf.Abs(pull.x)/pull.x ) );
+				else goY( (int)(Mathf.Abs(pull.y)/pull.y ) );
+			}
+		}
 	}
 
 	// Look for prey
 	private void prowl () {
 		eating = false;
+		runTime -= restRate;
+		speed = 1f;
+		if (runTime < 0 ) runTime = 0;
 		fullness -= hungerRate;
 		//Move in a random direction.
 		if( Random.Range(0.0f, 1.0f) > buddiesWeight ) {
