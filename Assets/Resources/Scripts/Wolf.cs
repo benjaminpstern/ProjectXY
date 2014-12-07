@@ -9,7 +9,6 @@ public class Wolf : MonoBehaviour {
 	public float stealth;		//How unlikely it is for the wolf to be noticed. (0 - 1)
 	public float speed;		//How fast the wolf is moving.
 	public float runTime;		//How long the wolf has been running.
-	public float hungerWeight; 	//the weight it assigns to hunger
 	public float buddiesWeight;	//the weight it assigns to being next to buddies
 
 	public Buffalo prey;		//Direction of current prey.
@@ -28,8 +27,7 @@ public class Wolf : MonoBehaviour {
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
 		stealth = Random.Range(0.0f, 1.0f);
-		hungerWeight = Random.Range(0.0f, 1.0f);
-		buddiesWeight = 1 - hungerWeight;
+		buddiesWeight = Random.Range(0.0f, 1.0f);
 		eating = false;
 		speed = 0;
 		runTime = 0;
@@ -40,21 +38,21 @@ public class Wolf : MonoBehaviour {
 		fullness -= hungerRate;
 		
 		if( fullness < 0 ) die("starvation.");
-		else if( atFood() ) eat();					//Eat
+		else if( atFood() && fullness < 10 ) eat();			//Eat
 		else if( seePrey() && ( runTime < maxRunTime ) ) chase();	//Chase a Buffalo
 		else prowl();							//Look for a Buffalo to chase
 	}
 	
 	// Where are there wolves that can be seen?
 	private Vector3 buddiesLoc( ){
-		Vector3 pull = new Vector3();
+		Vector3 pull = Vector3.zero;
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Predator" );
 		if( stuff.Length == 0 ) return transform.position;
 		for( int i = 0; i < stuff.Length; i++ ){
 			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight )
-				pull += stuff[i].transform.position;
+				pull += stuff[i].transform.position - transform.position;
 		}
-		return pull;
+		return pull + transform.position;
 	}
 
 	// Is this wolf at food?
@@ -123,10 +121,14 @@ public class Wolf : MonoBehaviour {
 			return;
 		}
 		Buffalo food = foods[Random.Range(0, foods.Count)];
-		if( eatingRate  >= food.meat ){
+		if( (eatingRate  >= food.meat) && ((10 - fullness) >= food.meat) ){
 			fullness += food.meat;
 			food.meat = 0;
 			if ( foods.Count == 1) eating = false;
+		}
+		else if ( (10 - fullness <= food.meat) ) {
+			food.meat -= 10 - fullness;
+			fullness = 10;
 		}
 		else{
 			food.meat -= eatingRate;
@@ -169,7 +171,8 @@ public class Wolf : MonoBehaviour {
 		if (runTime < 0 ) runTime = 0;
 		fullness -= hungerRate;
 		//Move in a random direction.
-		if( Random.Range(0.0f, 1.0f) > buddiesWeight ) {
+		float loneliness = (((transform.position - buddiesLoc()).magnitude)/sight * buddiesWeight)/2;
+		if( Random.Range(0.0f, 1.0f) > ( loneliness ) ) {
 			int dirxy = Random.Range(0,2);
 			int dirpm = Random.Range(0,2);
 			if (dirpm == 0) dirpm--;
