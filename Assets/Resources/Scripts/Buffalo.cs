@@ -21,6 +21,8 @@ public class Buffalo : MonoBehaviour {
 	public int sight = 5;	//How many squares to check away from the buffalo.
 	public int running = 0;
 	public int panicked = 0;
+	public int pregnancyTimer;
+	public int pregnancyTurns;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
 	public static float roamSpeed = 1;
@@ -36,14 +38,15 @@ public class Buffalo : MonoBehaviour {
 	public float baseMeat = 10.0f;
 	public float decayFactor = .2f;
 	public float meat;
-	
-	
+	public Buffalo myMate;
+	public float matingReq;
 	void Start () {
-		fullness = Random.Range(3.0f, 7.0f);
+		fullness = 5;
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
 		buddiesBits = new int[bitNum];
 		tileBits = new int[bitNum];
+		pregnancyTimer = -1;
 		for(int i=0;i<bitNum;i++){
 			attentivenessBits[i] = Random.Range (0,2);
 			hungerBits[i] = Random.Range (0,2);
@@ -93,6 +96,28 @@ public class Buffalo : MonoBehaviour {
 			else if( act == 2 ) move(roamSpeed);	//Roam
 			else if( act == 4 ) moveBestTile();
 			else move(fleeSpeed);					//Run from wolf
+			if(fullness > matingReq && pregnancyTimer == -1 && !isDead){
+				foreach(GameObject o in GameObject.FindGameObjectsWithTag("Prey")){
+					Buffalo other = o.GetComponent<Buffalo>();
+					if((o.transform.position - this.transform.position).magnitude < sight){
+						if(other.fullness > matingReq && !other.isDead){
+							myMate = other;
+							other.myMate = null;
+							other.pregnancyTimer = pregnancyTurns;
+							this.pregnancyTimer = pregnancyTurns;
+						}
+					}
+				}
+			}
+			else if(pregnancyTimer > 1){
+				pregnancyTimer --;
+				if(pregnancyTimer == 0){
+					if(myMate != null && !isDead){
+						mate(myMate);
+					}
+					pregnancyTimer = -1;
+				}
+			}
 		}
 	}
 	
@@ -112,11 +137,17 @@ public class Buffalo : MonoBehaviour {
 	private void eat(){
 		if( eatingRate * (1.0f - attentiveness) > curTile.amount ){
 			fullness += curTile.amount;
+			if(fullness > 10){
+				fullness = 10;
+			}
 			curTile.amount = 0;
 		}
 		else{
 			curTile.amount -= eatingRate * (1.0f - attentiveness);
 			fullness += eatingRate * (1.0f - attentiveness);
+			if(fullness > 10){
+				fullness = 10;
+			}
 		}
 	}
 	private void moveBestTile(){
@@ -315,6 +346,12 @@ public class Buffalo : MonoBehaviour {
 		return a2;
 	}
 	public void mate(Buffalo other){
-		Buffalo newBuffalo = Instantiate(Resources.Load ("Prefab/Buffalo"),this.transform.position);
+		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),this.transform.position,Quaternion.identity) as GameObject;
+		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
+		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
+		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
+		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
+		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
+		newBuffalo.setWeights();
 	}
 }
