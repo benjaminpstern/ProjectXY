@@ -60,6 +60,7 @@ public class Buffalo : MonoBehaviour {
 		tileWeight /= sum;
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
+		curTile.occupied = true;
 	}
 	void setWeights(){
 		attentiveness = 0;
