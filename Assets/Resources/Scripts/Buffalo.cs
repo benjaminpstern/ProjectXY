@@ -24,7 +24,7 @@ public class Buffalo : MonoBehaviour {
 	public int pregnancyTimer;
 	public int pregnancyTurns = 10;
 	public int age;
-	public int maxAge = 200;
+	public int maxAge = 100;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
 	public int roamSpeed = 1;
@@ -35,7 +35,7 @@ public class Buffalo : MonoBehaviour {
 	public float eatingRate = .5f;
 	public int bitNum = 10;
 	public float mutationRate = 0;
-	public static float hungerRate = .01f;
+	public static float hungerRate = .03f;
 	public bool isDead = false;
 	public float baseMeat = 10.0f;
 	public float decayFactor = .2f;
@@ -165,7 +165,7 @@ public class Buffalo : MonoBehaviour {
 		}
 	}
 	private void moveBestTile(){
-		fullness -= hungerRate/2;
+		fullness -= hungerRate/4;
 		Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
 		List<int> maxIndices = new List<int>();
 		float maxAmount = -1;
@@ -190,7 +190,7 @@ public class Buffalo : MonoBehaviour {
 	//Move function (Goes towards adjacent square with most grass if hungry & not running, else towards buddies.)
 	private void move( float speed ){
 		for( int num = 0; num < speed; num++ ){
-			fullness -= hungerRate/2;
+			fullness -= hungerRate/4;
 			//If panicked, run away from where you last saw a wolf.
 			if( panicked > 0 ){
 				Vector3 pull = transform.position - wolfLoc;
@@ -341,6 +341,7 @@ public class Buffalo : MonoBehaviour {
 			a2[i] = array2[i];
 		}
 		int swapPosition = Random.Range (0,a1.Length);
+		//print(swapPosition);
 		int[] tmp = new int[a1.Length];
 		for(int i=swapPosition;i<a1.Length;i++){
 			tmp[i] = a1[i];
@@ -348,10 +349,10 @@ public class Buffalo : MonoBehaviour {
 			a2[i] = tmp[i];
 		}
 		for(int i=0;i<a1.Length;i++){
-			if(Random.Range (0f,1f) > mutationRate){
+			if(Random.Range (0f,1f) < mutationRate){
 				a1[i] = (a1[i]+1)%2;
 			}
-			if(Random.Range (0f,1f) > mutationRate){
+			if(Random.Range (0f,1f) < mutationRate){
 				a2[i] = (a2[i]+1)%2;
 			}
 		}
@@ -391,12 +392,20 @@ public class Buffalo : MonoBehaviour {
 		}
 		return findEmptyTile(new Vector3(x,y,position.z));
 	}
+	public string stringArray(int[] a){
+		string s = "";
+		for(int i=0;i<a.Length;i++){
+			s+=a[i].ToString();
+		}
+		return s;
+	}
 	public void mate(Buffalo other){
 		Vector3 position = findEmptyTile(this.transform.position);
 		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;
 		field[(int)position.x][(int)position.y].occupied = true;
 		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
+		//print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
 		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
 		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
