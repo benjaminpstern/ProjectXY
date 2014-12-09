@@ -24,7 +24,7 @@ public class Buffalo : MonoBehaviour {
 	public int pregnancyTimer;
 	public int pregnancyTurns = 10;
 	public int age;
-	public int maxAge = 100;
+	public int maxAge = 150;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
 	public int roamSpeed = 1;
