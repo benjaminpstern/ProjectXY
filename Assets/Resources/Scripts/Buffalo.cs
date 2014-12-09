@@ -329,7 +329,7 @@ public class Buffalo : MonoBehaviour {
 		if( !isDead ){
 			isDead = true;
 			meat = baseMeat + fullness;
-			
+			transform.localEulerAngles = new Vector3(0,0,180);
 			print("Buffalo died due to " + cause);
 		}
 	}
