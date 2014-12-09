@@ -35,7 +35,7 @@ public class Buffalo : MonoBehaviour {
 	public float eatingRate = .5f;
 	public int bitNum = 10;
 	public float mutationRate = 0;
-	public static float hungerRate = .03f;
+	public float hungerRate = .01f;
 	public bool isDead = false;
 	public float baseMeat = 10.0f;
 	public float decayFactor = .2f;
@@ -112,7 +112,7 @@ public class Buffalo : MonoBehaviour {
 			else if( act == 2 ) move(roamSpeed);	//Roam
 			else if( act == 4 ) moveBestTile();
 			else move(fleeSpeed);					//Run from wolf
-			if(fullness > matingReq && pregnancyTimer == -1 && !isDead){
+			if(fullness > matingReq && pregnancyTimer == -1 && !isDead && running <= 0 && panicked <= 0){
 				foreach(GameObject o in GameObject.FindGameObjectsWithTag("Prey")){
 					Buffalo other = o.GetComponent<Buffalo>();
 					if((o.transform.position - this.transform.position).magnitude < 5){

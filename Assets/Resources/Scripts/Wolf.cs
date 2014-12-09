@@ -35,10 +35,12 @@ public class Wolf : MonoBehaviour {
 	public Wolf myMate;
 	public int pregnancyTimer;
 	public double matingReq = 8;
+	public int age;	
+	public int maxAge = 100;
 	public int pregnancyTurns = 10;
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);
-		
+		age = 0;
 		eating = false;
 		speed = 0;
 		runTime = 0;
@@ -60,11 +62,15 @@ public class Wolf : MonoBehaviour {
 		buddiesWeight /= Mathf.Pow (2,bitNum);
 	}
 	void Update () {
+		age++;
+		if(age > maxAge){
+			die("being old.");
+		}
 		fullness -= hungerRate;
 		if(fullness > matingReq && pregnancyTimer == -1){
 			foreach(GameObject o in GameObject.FindGameObjectsWithTag("Predator")){
 				Wolf other = o.GetComponent<Wolf>();
-				if((o.transform.position - this.transform.position).magnitude < 2){
+				if((o.transform.position - this.transform.position).magnitude < 5){
 					if(other.fullness > matingReq){
 						myMate = other;
 						other.myMate = null;
