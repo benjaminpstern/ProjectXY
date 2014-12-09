@@ -98,7 +98,7 @@ public class Buffalo : MonoBehaviour {
 				fullness -= hungerRate;
 			}
 			else{
-				fullness -= 2*hungerRate;
+				fullness -= hungerRate;
 			}
 			int act = action();
 			if(running > 0){
@@ -405,7 +405,7 @@ public class Buffalo : MonoBehaviour {
 		field[(int)position.x][(int)position.y].occupied = true;
 		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
-		//print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
+		print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
 		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
 		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
