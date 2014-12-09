@@ -45,11 +45,16 @@ public class Buffalo : MonoBehaviour {
 	void Start () {
 		age = 0 + Random.Range((int)(-.1 * maxAge), (int)(.1 * maxAge) );
 		fullness = 4;
+		pregnancyTimer = -1;
+		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
+		curTile = field[(int)transform.position.x][(int)transform.position.y];
+		curTile.occupied = true;
+	}
+	public void randomInit(){
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
 		buddiesBits = new int[bitNum];
 		tileBits = new int[bitNum];
-		pregnancyTimer = -1;
 		for(int i=0;i<bitNum;i++){
 			attentivenessBits[i] = Random.Range (0,2);
 			hungerBits[i] = Random.Range (0,2);
@@ -61,9 +66,6 @@ public class Buffalo : MonoBehaviour {
 		hungerWeight /= sum;
 		buddiesWeight /= sum;
 		tileWeight /= sum;
-		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
-		curTile = field[(int)transform.position.x][(int)transform.position.y];
-		curTile.occupied = true;
 	}
 	void setWeights(){
 		attentiveness = 0;
@@ -113,7 +115,7 @@ public class Buffalo : MonoBehaviour {
 			if(fullness > matingReq && pregnancyTimer == -1 && !isDead){
 				foreach(GameObject o in GameObject.FindGameObjectsWithTag("Prey")){
 					Buffalo other = o.GetComponent<Buffalo>();
-					if((o.transform.position - this.transform.position).magnitude < sight){
+					if((o.transform.position - this.transform.position).magnitude < 5){
 						if(other.fullness > matingReq && !other.isDead){
 							myMate = other;
 							other.myMate = null;
@@ -405,10 +407,14 @@ public class Buffalo : MonoBehaviour {
 		field[(int)position.x][(int)position.y].occupied = true;
 		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
-		print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
+		//print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
 		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
 		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
 		newBuffalo.setWeights();
+		float sum = newBuffalo.hungerWeight + newBuffalo.buddiesWeight + newBuffalo.tileWeight;
+		newBuffalo.hungerWeight /= sum;
+		newBuffalo.buddiesWeight /= sum;
+		newBuffalo.tileWeight /= sum;
 	}
 }

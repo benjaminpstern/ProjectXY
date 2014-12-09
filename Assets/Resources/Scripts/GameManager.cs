@@ -35,7 +35,9 @@ public class GameManager : MonoBehaviour {
 				int x = herdX+j;
 				int y = herdY-j;
 				GameObject buffaloPrefab = Resources.Load<GameObject>("Prefab/Buffalo");
-				Instantiate(buffaloPrefab,new Vector3(x,y,0),Quaternion.identity);
+				Buffalo b = (Instantiate(buffaloPrefab,new Vector3(x,y,0),Quaternion.identity) as GameObject).GetComponent<Buffalo>();
+				b.randomInit();
+				
 			}
 		}
 		for(int i=0;i<numPacks;i++){
@@ -47,6 +49,7 @@ public class GameManager : MonoBehaviour {
 				GameObject wolfPrefab = Resources.Load<GameObject>("Prefab/Wolf");
 				GameObject wolf = Instantiate(wolfPrefab,new Vector3(x,y,0),Quaternion.identity) as GameObject;
 				wolf.GetComponent<Wolf>().curTile = field[x][y];
+				wolf.GetComponent<Wolf>().randomInit();
 			}
 		}
 	}
