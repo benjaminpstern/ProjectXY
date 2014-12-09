@@ -241,7 +241,7 @@ public class Buffalo : MonoBehaviour {
 		if( stuff.Length == 0 ) return transform.position;
 		for( int i = 0; i < stuff.Length; i++ ){
 			float distance = Vector3.Distance( stuff[i].transform.position, transform.position );
-			if( distance <= sight && Random.Range (0f,1f) < (attentiveness/distance) )
+			if( distance <= sight && Random.Range (0f,1f) < (attentiveness/distance) && !stuff[i].GetComponent<Buffalo>().isDead )
 				pull += stuff[i].transform.position-transform.position;
 		}
 		return pull+transform.position;
