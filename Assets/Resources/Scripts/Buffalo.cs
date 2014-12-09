@@ -280,7 +280,7 @@ public class Buffalo : MonoBehaviour {
 		//Check for any nearby wolves.
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Predator" );
 		for( int i = 0; i < stuff.Length; i++ ){
-			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight ){
+			if( Vector3.Distance( stuff[i].transform.position, transform.position ) <= sight || stuff[i].GetComponent<Wolf>().eating ){
 				float scaledSpeed = stuff[i].GetComponent<Wolf>().speed/stuff[i].GetComponent<Wolf>().maxSpeed;
 				if( attentiveness * (scaledSpeed + sight/Vector3.Distance(stuff[i].transform.position, transform.position) ) > Random.Range(0f, 1f) ){
 					panicked = calmTime;
