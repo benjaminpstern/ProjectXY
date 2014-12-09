@@ -43,7 +43,7 @@ public class Buffalo : MonoBehaviour {
 	public Buffalo myMate;
 	public float matingReq;
 	void Start () {
-		age = 0;
+		age = 0 + Random.Range((int)(-.1 * maxAge), (int)(.1 * maxAge) );
 		fullness = 4;
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
