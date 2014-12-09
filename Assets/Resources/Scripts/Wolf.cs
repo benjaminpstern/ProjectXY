@@ -329,6 +329,7 @@ public class Wolf : MonoBehaviour {
 
 	public void die(string cause){
 		print("Wolf died due to " + cause);
+		curTile.occupied = false;
 		Destroy(gameObject);
 	}
 	public Vector3 findEmptyTile(Vector3 position){
