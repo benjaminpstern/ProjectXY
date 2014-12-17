@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+// Script for the grass tiles.
 public class Grass : MonoBehaviour {
-	public float amount;
-	public float regenRate;
+	public float amount;	//amount of grass on this tile.
+	public float regenRate;	//amount of grass that regenrates each turn.
 	//X and Y positions of the grass.
 	public int x;
 	public int y;
-	public float maxAmount;
-	//Whether or not something is on this grass.
-	public bool occupied;
+	public float maxAmount;	//maximum amount of grass this tile can support.
+	public bool occupied;	//Whether or not something is on this grass.
 	void Start () {
 		x = (int)transform.position.x;
 		y = (int)transform.position.y;
@@ -18,14 +18,12 @@ public class Grass : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if(amount < maxAmount){
+		//incriment amout of grass, but stop at maxAmount.
+		if(amount + regenRate < maxAmount){
 			amount += regenRate;
 		}
 		else{
 			amount = maxAmount;
 		}
-	}
-	void onMouseDown(){
-		amount = 0;
 	}
 }

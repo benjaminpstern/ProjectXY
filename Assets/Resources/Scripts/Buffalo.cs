@@ -7,18 +7,28 @@ public class Buffalo : MonoBehaviour {
 	//Things that are initialized differently for each buffalo.
 	public float fullness;		//Goes from 0 (Starving) to 10 (Super full).  negative fullness => dead.
 	public float attentiveness;	//How likely it is for the buffalo to notice heard moving and also wolves.
+<<<<<<< HEAD
 	public float hungerWeight; //the weight it assigns to hunger
 	public float buddiesWeight;//the weight it assigns to being next to buddies
 	public float tileWeight;//the weight it assigns to being on a good tile
+	public int[] attentivenessBits;//an array of 0 or 1 integers that gets converted to attentiveness
+	public int[] hungerBits;//an array of 0 or 1 integers that gets converted to hungerWeight
+	public int[] buddiesBits;//an array of 0 or 1 integers that gets converted to buddiesWeight
+	public int[] tileBits;//an array of 0 or 1 integers that gets converted to tileWeight
+=======
+	public float hungerWeight; 	//the weight it assigns to hunger
+	public float buddiesWeight;	//the weight it assigns to being next to buddies
+	public float tileWeight;	//the weight it assigns to being on a good tile
 	public int[] attentivenessBits;
 	public int[] hungerBits;
 	public int[] buddiesBits;
 	public int[] tileBits;
+>>>>>>> abc059c78f844386fd3d7258fccd337b09c6854b
 
-	//Things that don't change from buffalo to buffalo.
-	public Grass curTile;
-	public Grass[][] field;
-	public int sight = 5;	//How many squares to check away from the buffalo.
+	//Things that are specific to a buffalo.
+	public Grass curTile;		//grass tile this buffalo is occupying.
+	public Grass[][] field;		//grass field array
+	public int sight = 5;		//How many squares to check away from the buffalo.
 	public int running = 0;
 	public int panicked = 0;
 	public int pregnancyTimer;
@@ -27,6 +37,8 @@ public class Buffalo : MonoBehaviour {
 	public int maxAge = 150;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
+
+	//Things that don't change from buffalo to buffalo.
 	public int roamSpeed = 1;
 	public int runSpeed = 3;
 	public int fleeSpeed = 5;
@@ -35,7 +47,7 @@ public class Buffalo : MonoBehaviour {
 	public float eatingRate = .5f;
 	public int bitNum = 10;
 	public float mutationRate = 0;
-	public static float hungerRate = .03f;
+	public float hungerRate = .01f;
 	public bool isDead = false;
 	public float baseMeat = 10.0f;
 	public float decayFactor = .2f;
@@ -45,11 +57,16 @@ public class Buffalo : MonoBehaviour {
 	void Start () {
 		age = 0 + Random.Range((int)(-.1 * maxAge), (int)(.1 * maxAge) );
 		fullness = 4;
+		pregnancyTimer = -1;
+		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
+		curTile = field[(int)transform.position.x][(int)transform.position.y];
+		curTile.occupied = true;
+	}
+	public void randomInit(){
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
 		buddiesBits = new int[bitNum];
 		tileBits = new int[bitNum];
-		pregnancyTimer = -1;
 		for(int i=0;i<bitNum;i++){
 			attentivenessBits[i] = Random.Range (0,2);
 			hungerBits[i] = Random.Range (0,2);
@@ -61,9 +78,6 @@ public class Buffalo : MonoBehaviour {
 		hungerWeight /= sum;
 		buddiesWeight /= sum;
 		tileWeight /= sum;
-		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
-		curTile = field[(int)transform.position.x][(int)transform.position.y];
-		curTile.occupied = true;
 	}
 	void setWeights(){
 		attentiveness = 0;
@@ -110,10 +124,10 @@ public class Buffalo : MonoBehaviour {
 			else if( act == 2 ) move(roamSpeed);	//Roam
 			else if( act == 4 ) moveBestTile();
 			else move(fleeSpeed);					//Run from wolf
-			if(fullness > matingReq && pregnancyTimer == -1 && !isDead){
+			if(fullness > matingReq && pregnancyTimer == -1 && !isDead && running <= 0 && panicked <= 0){
 				foreach(GameObject o in GameObject.FindGameObjectsWithTag("Prey")){
 					Buffalo other = o.GetComponent<Buffalo>();
-					if((o.transform.position - this.transform.position).magnitude < sight){
+					if((o.transform.position - this.transform.position).magnitude < 5){
 						if(other.fullness > matingReq && !other.isDead){
 							myMate = other;
 							other.myMate = null;
@@ -333,6 +347,8 @@ public class Buffalo : MonoBehaviour {
 			print("Buffalo died due to " + cause);
 		}
 	}
+	//returns a bit array that is the result of running the genetics algorithm
+	//on the two bit arrays array1 and array2
 	public int[] mate(int[] array1, int[] array2){
 		int[] a1 = new int[array1.Length];
 		int[] a2 = new int[array2.Length];
@@ -361,6 +377,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		return a2;
 	}
+	//finds an empty tile naively: if its current tile is not empty, it goes in a random direction and calls findEmptyTile there.
 	public Vector3 findEmptyTile(Vector3 position){
 		if(!field[(int)position.x][(int)position.y].occupied){
 			return position;
@@ -392,6 +409,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		return findEmptyTile(new Vector3(x,y,position.z));
 	}
+	//for printing
 	public string stringArray(int[] a){
 		string s = "";
 		for(int i=0;i<a.Length;i++){
@@ -399,16 +417,22 @@ public class Buffalo : MonoBehaviour {
 		}
 		return s;
 	}
+	//mates with other and produces a baby buffalo
 	public void mate(Buffalo other){
-		Vector3 position = findEmptyTile(this.transform.position);
-		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;
-		field[(int)position.x][(int)position.y].occupied = true;
-		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
+		Vector3 position = findEmptyTile(this.transform.position);//find an empty tile to put a child buffalo on
+		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;//the game object for the child
+		field[(int)position.x][(int)position.y].occupied = true;//occupy the square that we put the child on
+		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();//get the buffalo object from the game object
+		//changes the new buffalo's bit arrays to the arrays returned by the mate(bitArray,bitArray) function
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
-		print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
 		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
 		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
-		newBuffalo.setWeights();
+		newBuffalo.setWeights();//takes the bit arrays and uses them to set the float values of the parameters
+		float sum = newBuffalo.hungerWeight + newBuffalo.buddiesWeight + newBuffalo.tileWeight;
+		//divide all of the weights by the sum of all of them so they add to 1
+		newBuffalo.hungerWeight /= sum;
+		newBuffalo.buddiesWeight /= sum;
+		newBuffalo.tileWeight /= sum;
 	}
 }
