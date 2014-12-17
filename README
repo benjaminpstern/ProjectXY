@@ -1,0 +1,19 @@
+CSCI 364
+Artificial Intelligence
+Cole Peppis, Benjamin Stern, and Matt Swinton
+
+This directory should include all of the files necessary to run our
+project. If you desire to change the parameters, such as board size,
+number of animals, select the gameManager object in the scene hierarchy
+section of Unity's GUI. The parameters can then be changed via the
+object inspector tab. If you wish to change any of the characteristics
+of the animals, you can select their prefabs from the
+Assets/Resources/Prefab folder in the project tab, and change their
+parameters via the object inspector tab as well.
+
+Matt wrote most of the Buffalo script, Cole wrote most of the Wolf
+script, and Ben wrote most of the genetics and reproduction code, but we
+all helped to write the majority of the project.
+
+
+We have adhered to the Honor Code in this project.
