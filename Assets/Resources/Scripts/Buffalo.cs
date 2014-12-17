@@ -44,6 +44,8 @@ public class Buffalo : MonoBehaviour {
 	public float meat;
 	public Buffalo myMate;
 	public float matingReq;
+	
+	//Initialize parameters that don't varry between buffalo.
 	void Start () {
 		age = 0 + Random.Range((int)(-.1 * maxAge), (int)(.1 * maxAge) );
 		fullness = 4;
@@ -52,6 +54,8 @@ public class Buffalo : MonoBehaviour {
 		curTile = field[(int)transform.position.x][(int)transform.position.y];
 		curTile.occupied = true;
 	}
+	
+	//Initialize stuff that are different among buffalo randomly.  (Only called for first generation)
 	public void randomInit(){
 		attentivenessBits = new int[bitNum];
 		hungerBits = new int[bitNum];
@@ -69,6 +73,8 @@ public class Buffalo : MonoBehaviour {
 		buddiesWeight /= sum;
 		tileWeight /= sum;
 	}
+	
+	//More initialize stuff.
 	void setWeights(){
 		attentiveness = 0;
 		hungerWeight = 0;
@@ -85,7 +91,11 @@ public class Buffalo : MonoBehaviour {
 		buddiesWeight /= Mathf.Pow (2,bitNum);
 		tileWeight /= Mathf.Pow (2,bitNum);
 	}
+	
+	//Called every frame.
 	void Update () {
+		
+		//If we are dead, decay, and if finished decaying, go away.
 		if( isDead ){
 			meat -= decayFactor;
 			if( meat <= 0 ){
@@ -93,27 +103,35 @@ public class Buffalo : MonoBehaviour {
 				Destroy(gameObject);
 			}
 		}
+		
+		//Get older, and if finished getting old, die.
 		age++;
 		if(age > maxAge){
 			die("being old.");
 		}
+		
+		//Things that happen when alive.
 		else{
-			if(pregnancyTimer == -1){
-				fullness -= hungerRate;
-			}
-			else{
-				fullness -= hungerRate;
-			}
+			//Get more hungry, and if finished being pregnant, shit out a buffalo.
+			fullness -= hungerRate;
+			
+			//Figure out what to do.
 			int act = action();
+			
+			//Decriment running timer.
 			if(running > 0){
 				running--;
 			}
+			
+			//Do a thing, depending on "act" (or die, if too hungry).
 			if( fullness < 0 ) die("starvation.");
 			else if( act == 0 ) eat();	//Eat
 			else if( act == 1 ) move(runSpeed);	//Run to group
 			else if( act == 2 ) move(roamSpeed);	//Roam
-			else if( act == 4 ) moveBestTile();
+			else if( act == 4 ) moveBestTile();		//Go to tile with most food on it.
 			else move(fleeSpeed);					//Run from wolf
+			
+			//Mate if we are full enough and not already pregnant.
 			if(fullness > matingReq && pregnancyTimer == -1 && !isDead && running <= 0 && panicked <= 0){
 				foreach(GameObject o in GameObject.FindGameObjectsWithTag("Prey")){
 					Buffalo other = o.GetComponent<Buffalo>();
@@ -127,6 +145,8 @@ public class Buffalo : MonoBehaviour {
 					}
 				}
 			}
+			
+			//Get more pregnant, and if pregnant enough, shit out a buffalo.
 			else if(pregnancyTimer > 0){
 				pregnancyTimer --;
 				if(pregnancyTimer == 0){
@@ -153,6 +173,7 @@ public class Buffalo : MonoBehaviour {
 	
 	//Eat function.
 	private void eat(){
+		//If not much grass, eat the rest of it.
 		if( eatingRate * (1.0f - attentiveness) > curTile.amount ){
 			fullness += curTile.amount;
 			if(fullness > 10){
@@ -160,6 +181,7 @@ public class Buffalo : MonoBehaviour {
 			}
 			curTile.amount = 0;
 		}
+		//Otherwise eat some grass.
 		else{
 			curTile.amount -= eatingRate * (1.0f - attentiveness);
 			fullness += eatingRate * (1.0f - attentiveness);
@@ -168,11 +190,14 @@ public class Buffalo : MonoBehaviour {
 			}
 		}
 	}
+	
+	//Go to the tile with the most food on it.
 	private void moveBestTile(){
 		fullness -= hungerRate/4;
 		Grass[] neighbors = {getSouth(),getNorth(),getEast(),getWest()};
 		List<int> maxIndices = new List<int>();
 		float maxAmount = -1;
+		//Loop through adjacent tiles, get ones with most grass.
 		for(int i=0;i<4;i++){
 			if(neighbors[i]!=null){
 				if(neighbors[i].amount > maxAmount){
@@ -185,6 +210,7 @@ public class Buffalo : MonoBehaviour {
 				}
 			}
 		}
+		//Randomly go to one of the tiles with the maximum amount of grass.
 		int maxIndex = maxIndices[Random.Range (0,maxIndices.Count)];
 		if(maxIndex == 0) goY(-1);
 		else if( maxIndex == 1 ) goY(1);
@@ -215,30 +241,37 @@ public class Buffalo : MonoBehaviour {
 			}
 		}
 	}
+	
+	//Returns the tile directly North of the buffalo, or null if already on the edge.
 	private Grass getNorth(){
 		if(curTile.y < field.Length-1){
 			return field[curTile.x][curTile.y+1];
 		}
 		return null;
 	}
+	//Returns the tile directly South of the buffalo, or null if already on the edge.
 	private Grass getSouth(){
 		if(curTile.y > 0){
 			return field[curTile.x][curTile.y-1];
 		}
 		return null;
 	}
+	//Returns the tile directly East of the buffalo, or null if already on the edge.
 	private Grass getEast(){
 		if(curTile.x < field.Length-1){
 			return field[curTile.x+1][curTile.y];
 		}
 		return null;
 	}
+	//Returns the tile directly West of the buffalo, or null if already on the edge.
 	private Grass getWest(){
 		if(curTile.x > 0){
 			return field[curTile.x-1][curTile.y];
 		}
 		return null;
 	}
+	
+	//Returns the locatoin of the buffalo visible to the current buffalo, averaged together.
 	private Vector3 buddiesLoc( ){
 		Vector3 pull = Vector3.zero;
 		GameObject[] stuff = GameObject.FindGameObjectsWithTag( "Prey" );
@@ -251,7 +284,7 @@ public class Buffalo : MonoBehaviour {
 		return pull+transform.position;
 	}
 	
-	//Moves one unit in the x direction (1 = east, -1 = west)
+	//Moves one unit in the X (E/W) direction (1 = east, -1 = west)
 	private void goX( int dir ){
 		if(curTile.x + dir < field.Length && curTile.x + dir >= 0){
 			Grass newTile = field[curTile.x + dir][curTile.y];
@@ -261,11 +294,12 @@ public class Buffalo : MonoBehaviour {
 				transform.position = new Vector3(curTile.x,curTile.y,transform.position.z);
 				curTile.occupied = true;
 			}
-		}	
+		}
+		//If the desired movement is not possible, go either North or South, randomly.
 		else goY((int)((((float)Random.Range(0, 2)) - .5f) * 2) );
 	}
 	
-	//Moves one unit in the y direction (1 = south, -1 = north)
+	//Moves one unit in the Y (N/S) direction (1 = south, -1 = north)
 	private void goY( int dir ){
 		if(curTile.y + dir < field.Length && curTile.y + dir >= 0){
 			Grass newTile = field[curTile.x][curTile.y + dir];
@@ -276,6 +310,7 @@ public class Buffalo : MonoBehaviour {
 				curTile.occupied = true;
 			}
 		}
+		//If the desired movement is not possible, go either East or West, randomly.
 		else goX((int)((((float)Random.Range(0, 2)) - .5f) * 2) );
 	}
 	
@@ -329,6 +364,8 @@ public class Buffalo : MonoBehaviour {
 		runBuddy = null;
 		return false;
 	}
+	
+	//Called when the bufffalo dies, takes in the cause for debugging purposes.
 	public void die(string cause){
 		if( !isDead ){
 			isDead = true;
