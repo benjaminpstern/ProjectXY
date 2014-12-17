@@ -8,8 +8,8 @@ public class Wolf : MonoBehaviour {
 	public float fullness;		//Goes from 1 (Starving) to 10 (Super full).  0 fullness => dead.
 	public float stealth;		//How unlikely it is for the wolf to be noticed. (0 - 1)
 	public float speed;		//How fast the wolf is moving.
-	public int[] stealthBits;
-	public int[] buddiesBits;
+	public int[] stealthBits;//a bit array that will turn into stealth
+	public int[] buddiesBits;//a bit array that turns into buddies array
 	public float runTime;		//How long the wolf has been running.
 	public float buddiesWeight;	//the weight it assigns to being next to buddies
 
@@ -30,14 +30,14 @@ public class Wolf : MonoBehaviour {
 	public int maxRunTime = 13;	//Maximum amount of tiles a wolf can run.
 	public float eatingRate = 1f;	//How quickly a wolf eats.
 	public float hungerRate = .01f;	//How quickly a wolf gets hungry.
-	public int bitNum = 10;
-	public float mutationRate = 0;
-	public Wolf myMate;
-	public int pregnancyTimer;
-	public double matingReq = 8;
-	public int age;	
-	public int maxAge = 100;
-	public int pregnancyTurns = 10;
+	public int bitNum = 10;//number of bits in the bit array
+	public float mutationRate = 0;//frequency of mutations
+	public Wolf myMate;//gets set when mates
+	public int pregnancyTimer;//countdown to having baby
+	public double matingReq = 8;//how much food is required to have a baby
+	public int age;//how many turns this wolf has been alive
+	public int maxAge = 100;//how long before this wolf dies
+	public int pregnancyTurns = 10;//how long after mating before baby
 	void Start () {
 		fullness = Random.Range(3.0f, 7.0f);		//Wolves start at a random fullness.
 		age = 0;
@@ -386,9 +386,10 @@ public class Wolf : MonoBehaviour {
 		}
 		return findEmptyTile(new Vector3(x,y,position.z));
 	}
+	//runs the crossover algorithm on array1 and array2, returning a new array
 	public int[] mate(int[] array1, int[] array2){
 		if(array1.Length != array2.Length){
-			print("well fuck.");
+			print("oops");//shouldn't happen, array1 and array2 should be the same size
 		}
 		int[] a1 = new int[array1.Length];
 		int[] a2 = new int[array2.Length];
@@ -396,15 +397,14 @@ public class Wolf : MonoBehaviour {
 			a1[i] = array1[i];
 			a2[i] = array2[i];
 		}
-		int swapPosition = Random.Range (0,a1.Length);
-		//print(swapPosition);
+		int swapPosition = Random.Range (0,a1.Length);//where do we swap
 		int[] tmp = new int[a1.Length];
 		for(int i=swapPosition;i<a1.Length;i++){
 			tmp[i] = a1[i];
 			a1[i] = a2[i];
 			a2[i] = tmp[i];
 		}
-		for(int i=0;i<a1.Length;i++){
+		for(int i=0;i<a1.Length;i++){//flip a bit if there's a mutation there
 			if(Random.Range (0f,1f) < mutationRate){
 				a1[i] = (a1[i]+1)%2;
 			}
@@ -427,6 +427,7 @@ public class Wolf : MonoBehaviour {
 		stealth /= Mathf.Pow (2,bitNum);
 		buddiesWeight /= Mathf.Pow (2,bitNum);
 	}
+	//creates a new wolf as the child of this and other
 	public void mate(Wolf other){
 		Vector3 position = findEmptyTile(this.transform.position);
 		GameObject wolfObject = Instantiate(Resources.Load ("Prefab/Wolf"),position,Quaternion.identity) as GameObject;
