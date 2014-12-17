@@ -347,6 +347,8 @@ public class Buffalo : MonoBehaviour {
 			print("Buffalo died due to " + cause);
 		}
 	}
+	//returns a bit array that is the result of running the genetics algorithm
+	//on the two bit arrays array1 and array2
 	public int[] mate(int[] array1, int[] array2){
 		int[] a1 = new int[array1.Length];
 		int[] a2 = new int[array2.Length];
@@ -375,6 +377,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		return a2;
 	}
+	//finds an empty tile naively: if its current tile is not empty, it goes in a random direction and calls findEmptyTile there.
 	public Vector3 findEmptyTile(Vector3 position){
 		if(!field[(int)position.x][(int)position.y].occupied){
 			return position;
@@ -406,6 +409,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		return findEmptyTile(new Vector3(x,y,position.z));
 	}
+	//for printing
 	public string stringArray(int[] a){
 		string s = "";
 		for(int i=0;i<a.Length;i++){
@@ -413,6 +417,7 @@ public class Buffalo : MonoBehaviour {
 		}
 		return s;
 	}
+	//mates with other and produces a baby buffalo
 	public void mate(Buffalo other){
 		Vector3 position = findEmptyTile(this.transform.position);//find an empty tile to put a child buffalo on
 		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;//the game object for the child
