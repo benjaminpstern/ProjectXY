@@ -16,8 +16,8 @@ public class Wolf : MonoBehaviour {
 	//Things things that are specific to each wolf.
 	public Buffalo prey;		//Direction of current prey.
 	public Buffalo deadPrey;	//Direction dead prey to go eat.
-	public Grass curTile;
-	public Grass[][] field;
+	public Grass curTile;		//Current grass tile this wolf is occupying.
+	public Grass[][] field;		//Grass array.
 	public bool eating;		//Whether or not the wolf is eating.
 	public int prowlDirXY;		//Direction currently prowling. In X or in Y.
 	public int prowlDirPM;		//Direction currently prowling. Positive or Negative.
@@ -25,7 +25,7 @@ public class Wolf : MonoBehaviour {
 
 	//Things that don't change from wolf to wolf.
 	public int sight = 20;		//How many squares to check away from the wolf.
-	public int maxSpeed = 7;
+	public int maxSpeed = 7;	//Maximum speed a wolf can move in one turn.
 	public int restRate = 2;	//How quickly a wolf recovers from running.
 	public int maxRunTime = 13;	//Maximum amount of tiles a wolf can run.
 	public float eatingRate = 1f;	//How quickly a wolf eats.
@@ -39,13 +39,14 @@ public class Wolf : MonoBehaviour {
 	public int maxAge = 100;
 	public int pregnancyTurns = 10;
 	void Start () {
-		fullness = Random.Range(3.0f, 7.0f);
+		fullness = Random.Range(3.0f, 7.0f);		//Wolves start at a random fullness.
 		age = 0;
-		eating = false;
-		speed = 0;
-		runTime = 0;
+		eating = false;					//Wolves do start not eating.
+		speed = 0;					//Wolves do not start moveing.
+		runTime = 0;					//Wolves start rested.
+		//initialize the grass field pointer.
 		field = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>().field;
-		prowlDirXY = 0;
+		prowlDirXY = 0;					//Wolves are not prowling yet when they are initialized.
 		prowlDirPM = 0;
 		prowlTime = 0;
 		pregnancyTimer = -1;
@@ -61,11 +62,13 @@ public class Wolf : MonoBehaviour {
 		stealth /= Mathf.Pow (2,bitNum);
 		buddiesWeight /= Mathf.Pow (2,bitNum);
 	}
+	//This is called each frame.
 	void Update () {
 		age++;
 		if(age > maxAge){
 			die("being old.");
 		}
+		//get hungrier.
 		fullness -= hungerRate;
 		if(fullness > matingReq && pregnancyTimer == -1){
 			foreach(GameObject o in GameObject.FindGameObjectsWithTag("Predator")){
@@ -89,8 +92,9 @@ public class Wolf : MonoBehaviour {
 				pregnancyTimer = -1;
 			}
 		}
+		//die of hunger.
 		if( fullness < 0 ) die("starvation.");
-		else if( atFood() && fullness < 10 ) eat();			//Eat
+		else if( atFood() && fullness < 10 ) eat();			//Eat if at food.
 		else if( seeFood() && ( runTime < maxRunTime ) ) runToFood();	//Run to food!
 		else if( seePrey() && ( runTime < maxRunTime ) ) chase();	//Chase a Buffalo
 		else prowl();							//Look for a Buffalo to chase
@@ -110,11 +114,14 @@ public class Wolf : MonoBehaviour {
 
 	// Is this wolf at food?
 	private bool atFood () {
+		//find all buffalo objects.
 		GameObject[] buff = GameObject.FindGameObjectsWithTag( "Prey" );
+		//if one is adjacent return true!
 		for( int i = 0; i < buff.Length; i++ ){
 			if( (Vector3.Distance( buff[i].transform.position, transform.position ) <= 1) && (buff[i].GetComponent<Buffalo>().isDead) )
 				return true;
 		}
+		//otherwise return false!!
 		return false;
 	}
 
@@ -126,8 +133,11 @@ public class Wolf : MonoBehaviour {
 
 	// Can this wolf see prey?
 	private bool seePrey () {
+		//return true if already chasing a buffalo.
 		if( prey != null && (Vector3.Distance( prey.transform.position, transform.position ) <= sight) ) return true;
+		//stop chasing a buffalo if it is too far away now.
 		if( prey != null && (Vector3.Distance( prey.transform.position, transform.position ) > sight) ) prey = null;
+		//find all visible living buffalo.
 		List<Buffalo> visible = new List<Buffalo>();
 		GameObject[] buff = GameObject.FindGameObjectsWithTag( "Prey" );
 		if( buff.Length == 0 ) {
@@ -142,6 +152,7 @@ public class Wolf : MonoBehaviour {
 			prey = null;
 			return false;
 		}
+		//find the closest of the visible living buffalo.
 		List<Buffalo> close = new List<Buffalo>();
 		float closest = sight + 1;
 		for( int i = 0; i < visible.Count; i++ ) {
@@ -154,14 +165,18 @@ public class Wolf : MonoBehaviour {
 				close.Add(visible[i]);
 			}
 		}
+		//start chasing a random one of the closest visible buffalo.
 		prey = close[Random.Range(0, close.Count)];
 		return true;
 	}
 
 	// Can this wolf see food?
 	private bool seeFood () {
+		//return true if already focussed on a dead buffalo.
 		if( deadPrey != null && (Vector3.Distance( deadPrey.transform.position, transform.position ) <= sight) ) return true;
+		//stop focussing on a dead buffalo if it's too far away.
 		if( deadPrey != null && (Vector3.Distance( deadPrey.transform.position, transform.position ) > sight) ) deadPrey = null;
+		//find all visible dead buffalo.
 		List<Buffalo> visible = new List<Buffalo>();
 		GameObject[] buff = GameObject.FindGameObjectsWithTag( "Prey" );
 		if( buff.Length == 0 ) {
@@ -176,6 +191,7 @@ public class Wolf : MonoBehaviour {
 			deadPrey = null;
 			return false;
 		}
+		//find the closest of the visible dead buffalo.
 		List<Buffalo> close = new List<Buffalo>();
 		float closest = sight + 1;
 		for( int i = 0; i < visible.Count; i++ ) {
@@ -188,6 +204,7 @@ public class Wolf : MonoBehaviour {
 				close.Add(visible[i]);
 			}
 		}
+		//pick a random one of the closest dead buffalo to go eat.
 		deadPrey = close[Random.Range(0, close.Count)];
 		return true;
 	}

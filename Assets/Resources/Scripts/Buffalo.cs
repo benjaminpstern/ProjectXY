@@ -7,6 +7,7 @@ public class Buffalo : MonoBehaviour {
 	//Things that are initialized differently for each buffalo.
 	public float fullness;		//Goes from 0 (Starving) to 10 (Super full).  negative fullness => dead.
 	public float attentiveness;	//How likely it is for the buffalo to notice heard moving and also wolves.
+<<<<<<< HEAD
 	public float hungerWeight; //the weight it assigns to hunger
 	public float buddiesWeight;//the weight it assigns to being next to buddies
 	public float tileWeight;//the weight it assigns to being on a good tile
@@ -14,11 +15,20 @@ public class Buffalo : MonoBehaviour {
 	public int[] hungerBits;//an array of 0 or 1 integers that gets converted to hungerWeight
 	public int[] buddiesBits;//an array of 0 or 1 integers that gets converted to buddiesWeight
 	public int[] tileBits;//an array of 0 or 1 integers that gets converted to tileWeight
+=======
+	public float hungerWeight; 	//the weight it assigns to hunger
+	public float buddiesWeight;	//the weight it assigns to being next to buddies
+	public float tileWeight;	//the weight it assigns to being on a good tile
+	public int[] attentivenessBits;
+	public int[] hungerBits;
+	public int[] buddiesBits;
+	public int[] tileBits;
+>>>>>>> abc059c78f844386fd3d7258fccd337b09c6854b
 
-	//Things that don't change from buffalo to buffalo.
-	public Grass curTile;
-	public Grass[][] field;
-	public int sight = 5;	//How many squares to check away from the buffalo.
+	//Things that are specific to a buffalo.
+	public Grass curTile;		//grass tile this buffalo is occupying.
+	public Grass[][] field;		//grass field array
+	public int sight = 5;		//How many squares to check away from the buffalo.
 	public int running = 0;
 	public int panicked = 0;
 	public int pregnancyTimer;
@@ -27,6 +37,8 @@ public class Buffalo : MonoBehaviour {
 	public int maxAge = 100;
 	public Vector3 wolfLoc;
 	public Buffalo runBuddy;
+
+	//Things that don't change from buffalo to buffalo.
 	public int roamSpeed = 1;
 	public int runSpeed = 3;
 	public int fleeSpeed = 5;
