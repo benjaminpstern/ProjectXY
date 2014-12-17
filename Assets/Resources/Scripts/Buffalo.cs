@@ -10,10 +10,10 @@ public class Buffalo : MonoBehaviour {
 	public float hungerWeight; //the weight it assigns to hunger
 	public float buddiesWeight;//the weight it assigns to being next to buddies
 	public float tileWeight;//the weight it assigns to being on a good tile
-	public int[] attentivenessBits;
-	public int[] hungerBits;
-	public int[] buddiesBits;
-	public int[] tileBits;
+	public int[] attentivenessBits;//an array of 0 or 1 integers that gets converted to attentiveness
+	public int[] hungerBits;//an array of 0 or 1 integers that gets converted to hungerWeight
+	public int[] buddiesBits;//an array of 0 or 1 integers that gets converted to buddiesWeight
+	public int[] tileBits;//an array of 0 or 1 integers that gets converted to tileWeight
 
 	//Things that don't change from buffalo to buffalo.
 	public Grass curTile;
@@ -402,17 +402,18 @@ public class Buffalo : MonoBehaviour {
 		return s;
 	}
 	public void mate(Buffalo other){
-		Vector3 position = findEmptyTile(this.transform.position);
-		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;
-		field[(int)position.x][(int)position.y].occupied = true;
-		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();
+		Vector3 position = findEmptyTile(this.transform.position);//find an empty tile to put a child buffalo on
+		GameObject buffObject = Instantiate(Resources.Load ("Prefab/Buffalo"),position,Quaternion.identity) as GameObject;//the game object for the child
+		field[(int)position.x][(int)position.y].occupied = true;//occupy the square that we put the child on
+		Buffalo newBuffalo = buffObject.GetComponent<Buffalo>();//get the buffalo object from the game object
+		//changes the new buffalo's bit arrays to the arrays returned by the mate(bitArray,bitArray) function
 		newBuffalo.attentivenessBits = mate(this.attentivenessBits,other.attentivenessBits);
-		//print(stringArray(newBuffalo.attentivenessBits)+" "+stringArray(this.attentivenessBits)+" "+stringArray(other.attentivenessBits));
 		newBuffalo.hungerBits = mate(this.hungerBits,other.hungerBits);
 		newBuffalo.buddiesBits = mate(this.buddiesBits,other.buddiesBits);
 		newBuffalo.tileBits = mate(this.tileBits,other.tileBits);
-		newBuffalo.setWeights();
+		newBuffalo.setWeights();//takes the bit arrays and uses them to set the float values of the parameters
 		float sum = newBuffalo.hungerWeight + newBuffalo.buddiesWeight + newBuffalo.tileWeight;
+		//divide all of the weights by the sum of all of them so they add to 1
 		newBuffalo.hungerWeight /= sum;
 		newBuffalo.buddiesWeight /= sum;
 		newBuffalo.tileWeight /= sum;
